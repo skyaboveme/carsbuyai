@@ -1,212 +1,200 @@
 
 import React, { useState, useEffect } from 'react';
-import ChatWindow from './components/ChatWindow';
+import { Vehicle, SearchFilters, UserLocation } from './types';
+import { SAMPLE_VEHICLES, DEFAULT_LOCATION } from './constants';
 import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import FinanceCalculator from './components/FinanceCalculator';
-import ImageGenerator from './components/ImageGenerator';
-import LandingPage from './components/LandingPage';
-import { useChatHistory } from './hooks/useChatHistory';
-import type { Message, Source, CarListing } from './types';
-import { Sender } from './types';
-import { getChatResponseStream } from './services/geminiService';
+import LocationInput from './components/LocationInput';
+import SearchFiltersComponent from './components/SearchFilters';
+import VehicleGrid from './components/VehicleGrid';
+import VehicleDetail from './components/VehicleDetail';
+import './index.css';
 
-// Regex to find a JSON code block
-const JSON_FENCE_REGEX = /```json\s*([\s\S]*?)\s*```/;
+function App() {
+  const [userLocation, setUserLocation] = useState<UserLocation>(DEFAULT_LOCATION);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
+  const [filters, setFilters] = useState<SearchFilters>({
+    zipcode: DEFAULT_LOCATION.zipcode,
+    radius: 25
+  });
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showLocationInput, setShowLocationInput] = useState(false);
 
-const App: React.FC = () => {
-  type View = 'landing' | 'chat' | 'calculator' | 'imageGenerator';
-  const [activeView, setActiveView] = useState<View>('landing');
-  const [isAiLoading, setIsAiLoading] = useState(false);
+  // Load vehicles when location changes
+  useEffect(() => {
+    loadVehicles();
+  }, [userLocation]);
 
-  const {
-    conversations,
-    activeConversation,
-    setActiveConversationId,
-    startNewConversation,
-    addMessageToConversation,
-    updateMessageInConversation,
-    deleteConversation,
-  } = useChatHistory();
-  
-  const handleNewConversation = () => {
-    startNewConversation();
-    setActiveView('chat');
-  };
-  
-  const handleSelectConversation = (id: string) => {
-    setActiveConversationId(id);
-    setActiveView('chat');
-  };
+  // Filter vehicles when filters change
+  useEffect(() => {
+    filterVehicles();
+  }, [vehicles, filters]);
 
-  const handleGetStarted = () => {
-    startNewConversation();
-    setActiveView('chat');
-  };
-
-  const handleSendMessage = async (userText: string) => {
-    if (isAiLoading || !activeConversation) return;
-
-    const conversationId = activeConversation.id;
-    // Make a clean copy of the history *before* adding the new messages for the UI
-    const historyForApi = [...activeConversation.messages];
-
-    setIsAiLoading(true);
-    
-    const userMessage: Message = {
-      id: `user-${Date.now()}`,
-      text: userText,
-      sender: Sender.USER,
-    };
-    addMessageToConversation(conversationId, userMessage);
-    
-    const aiResponseId = `ai-${Date.now()}`;
-    const aiPlaceholderMessage: Message = {
-      id: aiResponseId,
-      text: '...',
-      sender: Sender.AI,
-      sources: [],
-    };
-    addMessageToConversation(conversationId, aiPlaceholderMessage);
-    
+  const loadVehicles = async () => {
+    setLoading(true);
     try {
-      // Pass the clean history to the service
-      const stream = await getChatResponseStream(historyForApi, userText);
-      
-      let fullResponseText = '';
-      const collectedSources: Source[] = [];
-      const sourceUris = new Set<string>();
-
-      for await (const chunk of stream) {
-        let hasNewContent = false;
-        
-        if (chunk.text) {
-          fullResponseText += chunk.text;
-          hasNewContent = true;
-        }
-
-        const groundingChunks = chunk.candidates?.[0]?.groundingMetadata?.groundingChunks;
-        if (groundingChunks) {
-          for (const groundingChunk of groundingChunks) {
-            if (groundingChunk.web?.uri && !sourceUris.has(groundingChunk.web.uri)) {
-              sourceUris.add(groundingChunk.web.uri);
-              collectedSources.push({
-                uri: groundingChunk.web.uri,
-                title: groundingChunk.web.title || groundingChunk.web.uri,
-              });
-              hasNewContent = true;
-            }
-          }
-        }
-        
-        if (hasNewContent) {
-          // Temporarily update with raw text during streaming
-          updateMessageInConversation(conversationId, aiResponseId, { text: fullResponseText, sources: [...collectedSources] });
-        }
-      }
-
-      // Helper to robustly parse and validate JSON
-      const parseAndValidateListings = (jsonString: string): CarListing[] | null => {
-        try {
-          const parsedJson = JSON.parse(jsonString);
-          if (Array.isArray(parsedJson) && parsedJson.length > 0 && parsedJson.every(item => 'make' in item && 'model' in item && 'truePrice' in item)) {
-            return parsedJson;
-          }
-        } catch (e) {
-          // Not valid JSON, ignore
-        }
-        return null;
-      };
-
-      // Final processing after stream is complete
-      let finalMessageText = fullResponseText;
-      let listings: CarListing[] = [];
-      
-      // Attempt 1: Find a fenced JSON block
-      const jsonMatch = fullResponseText.match(JSON_FENCE_REGEX);
-      let parsedListings: CarListing[] | null = null;
-      
-      if (jsonMatch && jsonMatch[1]) {
-        parsedListings = parseAndValidateListings(jsonMatch[1]);
-        if (parsedListings) {
-          listings = parsedListings;
-          finalMessageText = fullResponseText.replace(JSON_FENCE_REGEX, '').trim();
-          // If there's no text left, provide a default
-          if (!finalMessageText) {
-              finalMessageText = "Here are the car listings I found for you:";
-          }
-        }
-      } else {
-        // Attempt 2: Check if the whole response is a valid JSON array of listings
-        parsedListings = parseAndValidateListings(fullResponseText.trim());
-        if (parsedListings) {
-          listings = parsedListings;
-          // The whole response was JSON, so we need some default text
-          finalMessageText = "Here are the car listings I found for you:";
-        }
-      }
-
-
-      if (!fullResponseText) {
-        updateMessageInConversation(conversationId, aiResponseId, { text: "I'm sorry, I couldn't generate a response. Please try a different question."});
-      } else {
-        updateMessageInConversation(conversationId, aiResponseId, { 
-          text: finalMessageText, 
-          sources: collectedSources, 
-          listings: listings 
-        });
-      }
-
+      // In a real app, this would be an API call
+      // For demo, we'll use sample data
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+      setVehicles(SAMPLE_VEHICLES);
     } catch (error) {
-      console.error('Error sending message:', error);
-      updateMessageInConversation(conversationId, aiResponseId, { text: 'Sorry, I encountered an error. Please try again.' });
+      console.error('Error loading vehicles:', error);
     } finally {
-      setIsAiLoading(false);
+      setLoading(false);
     }
   };
-  
-  const renderActiveView = () => {
-    switch(activeView) {
-      case 'landing':
-        return <LandingPage onGetStarted={handleGetStarted} />;
-      case 'calculator':
-        return <FinanceCalculator />;
-      case 'imageGenerator':
-        return <ImageGenerator />;
-      case 'chat':
-      default:
-        return (
-          <ChatWindow
-            key={activeConversation?.id} // Re-mount component on conversation change
-            conversation={activeConversation}
-            isLoading={isAiLoading}
-            onSendMessage={handleSendMessage}
-          />
-        );
+
+  const filterVehicles = () => {
+    let filtered = [...vehicles];
+
+    // Filter by price range
+    if (filters.minPrice) {
+      filtered = filtered.filter(v => v.price >= filters.minPrice!);
     }
+    if (filters.maxPrice) {
+      filtered = filtered.filter(v => v.price <= filters.maxPrice!);
+    }
+
+    // Filter by year range
+    if (filters.minYear) {
+      filtered = filtered.filter(v => v.year >= filters.minYear!);
+    }
+    if (filters.maxYear) {
+      filtered = filtered.filter(v => v.year <= filters.maxYear!);
+    }
+
+    // Filter by mileage
+    if (filters.maxMileage) {
+      filtered = filtered.filter(v => v.mileage <= filters.maxMileage!);
+    }
+
+    // Filter by makes
+    if (filters.makes && filters.makes.length > 0) {
+      filtered = filtered.filter(v => filters.makes!.includes(v.make));
+    }
+
+    // Filter by new/used
+    if (filters.isNew !== undefined) {
+      filtered = filtered.filter(v => v.isNew === filters.isNew);
+    }
+
+    // Filter by transmission
+    if (filters.transmission && filters.transmission.length > 0) {
+      filtered = filtered.filter(v => filters.transmission!.includes(v.transmission));
+    }
+
+    // Filter by fuel type
+    if (filters.fuelType && filters.fuelType.length > 0) {
+      filtered = filtered.filter(v => filters.fuelType!.includes(v.fuelType));
+    }
+
+    // Sort vehicles
+    if (filters.sortBy) {
+      filtered.sort((a, b) => {
+        let aValue: number, bValue: number;
+        
+        switch (filters.sortBy) {
+          case 'price':
+            aValue = a.price;
+            bValue = b.price;
+            break;
+          case 'mileage':
+            aValue = a.mileage;
+            bValue = b.mileage;
+            break;
+          case 'year':
+            aValue = a.year;
+            bValue = b.year;
+            break;
+          case 'newest':
+            aValue = a.daysOnLot;
+            bValue = b.daysOnLot;
+            break;
+          default:
+            return 0;
+        }
+
+        return filters.sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
+      });
+    }
+
+    setFilteredVehicles(filtered);
+  };
+
+  const handleLocationChange = (location: UserLocation) => {
+    setUserLocation(location);
+    setFilters(prev => ({ ...prev, zipcode: location.zipcode }));
+    setShowLocationInput(false);
+  };
+
+  const handleFiltersChange = (newFilters: SearchFilters) => {
+    setFilters(newFilters);
+  };
+
+  const handleVehicleSelect = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedVehicle(null);
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-900 text-white font-sans">
-      {activeView !== 'landing' && <Header />}
-      <div className="flex flex-1 overflow-hidden">
-        {activeView !== 'landing' && (
-          <Sidebar
-            conversations={conversations}
-            activeConversationId={activeConversation?.id || null}
-            onSelectConversation={handleSelectConversation}
-            onNewConversation={handleNewConversation}
-            onDeleteConversation={deleteConversation}
-            activeView={activeView}
-            onSelectView={setActiveView}
-          />
-        )}
-        <main className={`${activeView === 'landing' ? 'w-full' : 'flex-1'} overflow-hidden bg-slate-900`}>
-          {renderActiveView()}
-        </main>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Header 
+        userLocation={userLocation}
+        onLocationClick={() => setShowLocationInput(true)}
+      />
+      
+      {showLocationInput && (
+        <LocationInput
+          currentLocation={userLocation}
+          onLocationSelect={handleLocationChange}
+          onClose={() => setShowLocationInput(false)}
+        />
+      )}
+
+      <main className="container mx-auto px-4 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Filters Sidebar */}
+          <div className="lg:w-80 flex-shrink-0">
+            <SearchFiltersComponent
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              vehicleCount={filteredVehicles.length}
+            />
+          </div>
+
+          {/* Vehicle Grid */}
+          <div className="flex-1">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Vehicles near {userLocation.city}, {userLocation.state}
+              </h1>
+              <p className="text-gray-600">
+                {loading ? 'Loading...' : `${filteredVehicles.length} vehicles found`}
+              </p>
+            </div>
+            
+            <VehicleGrid
+              vehicles={filteredVehicles}
+              loading={loading}
+              onVehicleSelect={handleVehicleSelect}
+            />
+          </div>
+        </div>
+      </main>
+
+      {/* Vehicle Detail Modal */}
+      {selectedVehicle && (
+        <VehicleDetail
+          vehicle={selectedVehicle}
+          onClose={handleCloseDetail}
+        />
+      )}
     </div>
   );
-};
+}
 
 export default App;

@@ -1,66 +1,193 @@
-import type { Message } from './types';
-import { Sender } from './types';
+import type { Vehicle, UserLocation } from './types';
 
-export const AI_SYSTEM_INSTRUCTION = `You are 'Carla', a world-class, specialist AI car buying consultant. Your primary goal is to help users find the perfect car using an interactive, "search first, then refine" process.
-
-**Core Workflow: Search, Present, Refine**
-
-**Phase 1: Initial Search & Presentation**
-1.  When a user indicates they want to find a car, your FIRST and ONLY question MUST be to ask for their ZIP code or city to perform a localized search.
-2.  Once you have their location, immediately perform a broad search using your Google Search tool, focusing on finding real listings from sources like google.com/local/cars, cars.com, and autotrader.com.
-3.  You MUST present these initial findings as a JSON code block. Your response should consist of a brief introductory sentence, followed immediately by the JSON.
-
-**Phase 2: Interactive Filtering**
-1.  AFTER presenting the initial list of cars, you MUST then ask the user if they'd like to narrow down the results.
-2.  Engage in a conversational back-and-forth to refine the search. Ask clarifying questions ONE AT A TIME about their preferences.
-3.  The criteria to ask about are: Budget, New/Used status, Mileage limits, Year range, specific Features (e.g., Apple CarPlay, sunroof), Deal-Breakers, Make, or Model.
-4.  **IMPORTANT: Do NOT ask about the user's lifestyle or how they plan to use the vehicle.** Stick to concrete vehicle criteria.
-5.  With each new piece of information from the user, perform a new search and present the updated, filtered list of cars, again in the required JSON format.
-
-**Phase 3: The TruePrice Analysis**
-For EVERY vehicle you present in the JSON output, you must perform this analysis.
-1.  **Analysis:** Use your search tool to research market data for each car. Consider its mileage, condition, and compare its listing price to pricing guides (KBB, Edmunds).
-2.  **Generate "TruePrice Score":**
-    *   **score:** A number from 1-10. 1=Severely Overpriced, 5=Fair Price, 10=Excellent Deal.
-    *   **analysis:** A short sentence explaining the score. E.g., "Priced slightly above market average for its mileage."
-    *   **marketValue:** Your estimated market value for the vehicle.
-3.  **Format Your Final Response:** You MUST format your entire response as follows:
-    *   A single, brief introductory sentence.
-    *   Followed immediately by a JSON code block containing an array of car listing objects.
-    *   DO NOT include any text after the JSON block.
-
-**Phase 4: The Automated Negotiation Agent**
-This phase begins ONLY when the user clicks "Start Negotiation" for a specific car.
-1.  **Adopt Persona:** Immediately adopt the persona of a sharp, professional negotiation agent. Acknowledge the start of the negotiation.
-2.  **State Strategy:** Based on your \\\`TruePrice\\\` analysis for that specific car, briefly state your negotiation strategy. (e.g., "The dealer's price is about $1,500 above market value. My strategy will be to open with an offer of $27,000, citing the market data and leaving us room to negotiate.")
-3.  **Generate Initial Contact:** You MUST generate a professional, human-like initial email for the user to send to the dealership. Use placeholders. The email should be polite but firm, make a clear initial offer, and ask for an "out-the-door" price breakdown to uncover hidden fees. Use a placeholder for an anonymized email like \\\`buyer.381@carsbuyai.com\\\`. Present this email in a clear, copy-able format.
-4.  **Instruct the User:** Tell the user to send the email and paste the dealership's full response back into the chat for you to analyze.
-5.  **Analyze and Counter:** When the user pastes the dealer's response, analyze it. Explain the dealer's tactics, identify any hidden fees or non-negotiable items, and generate a logical counter-offer. Explain your reasoning for the counter-offer. Your goal is always the lowest possible "Out-the-door" price. Repeat this step as needed.
-
-**JSON Schema Requirement (Phase 3):**
-\`\`\`json
-[
+// Sample vehicle data for demonstration
+export const SAMPLE_VEHICLES: Vehicle[] = [
   {
-    "year": 2021,
-    "make": "Toyota",
-    "model": "RAV4",
-    "price": 28500,
-    "mileage": 35000,
-    "location": "San Diego, CA",
-    "imageUrl": "https://example.com/image.jpg",
-    "listingUrl": "https://www.cars.com/vehicledetail/...",
-    "truePrice": {
-      "score": 7,
-      "analysis": "Priced in line with market value for its trim and mileage.",
-      "marketValue": 28000
-    }
+    id: '1',
+    year: 2022,
+    make: 'Toyota',
+    model: 'Camry',
+    trim: 'LE',
+    price: 28500,
+    mileage: 15420,
+    location: 'San Diego, CA',
+    zipcode: '92101',
+    imageUrl: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400',
+    listingUrl: '#',
+    dealer: 'Metro Toyota',
+    transmission: 'Automatic',
+    fuelType: 'Gasoline',
+    exteriorColor: 'Silver Metallic',
+    interiorColor: 'Black',
+    vin: '4T1G11AK6NU123456',
+    description: 'Excellent condition, one owner, full service history',
+    features: ['Apple CarPlay', 'Bluetooth', 'Backup Camera', 'Lane Departure Warning'],
+    isNew: false,
+    daysOnLot: 12,
+    priceHistory: [
+      { date: '2024-01-01', price: 29500 },
+      { date: '2024-01-15', price: 28500 }
+    ],
+    mpgCity: 28,
+    mpgHighway: 39
+  },
+  {
+    id: '2',
+    year: 2023,
+    make: 'Honda',
+    model: 'CR-V',
+    trim: 'EX',
+    price: 32900,
+    mileage: 8750,
+    location: 'San Diego, CA',
+    zipcode: '92102',
+    imageUrl: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400',
+    listingUrl: '#',
+    dealer: 'Honda of San Diego',
+    transmission: 'CVT',
+    fuelType: 'Gasoline',
+    exteriorColor: 'Crystal Black Pearl',
+    interiorColor: 'Gray',
+    vin: '7FARW2H60NE123456',
+    description: 'Like new condition, still under warranty',
+    features: ['Honda Sensing', 'Sunroof', 'Heated Seats', 'Apple CarPlay', 'Android Auto'],
+    isNew: false,
+    daysOnLot: 5,
+    priceHistory: [
+      { date: '2024-01-10', price: 32900 }
+    ],
+    mpgCity: 27,
+    mpgHighway: 32
+  },
+  {
+    id: '3',
+    year: 2024,
+    make: 'Tesla',
+    model: 'Model 3',
+    trim: 'Long Range',
+    price: 47240,
+    mileage: 0,
+    location: 'San Diego, CA',
+    zipcode: '92103',
+    imageUrl: 'https://images.unsplash.com/photo-1617654112329-f26d0d65a5a4?w=400',
+    listingUrl: '#',
+    dealer: 'Tesla San Diego',
+    transmission: 'Single-Speed',
+    fuelType: 'Electric',
+    exteriorColor: 'Pearl White Multi-Coat',
+    interiorColor: 'Black',
+    vin: '5YJ3E1EA8PF123456',
+    description: 'Brand new Tesla Model 3 with latest features',
+    features: ['Autopilot', 'Supercharger', 'Premium Interior', 'Glass Roof'],
+    isNew: true,
+    daysOnLot: 1,
+    priceHistory: [
+      { date: '2024-01-20', price: 47240 }
+    ],
+    mpgCity: 134, // MPGe equivalent
+    mpgHighway: 126
+  },
+  {
+    id: '4',
+    year: 2021,
+    make: 'Ford',
+    model: 'F-150',
+    trim: 'XLT',
+    price: 39500,
+    mileage: 32100,
+    location: 'San Diego, CA',
+    zipcode: '92104',
+    imageUrl: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=400',
+    listingUrl: '#',
+    dealer: 'Ford Country',
+    transmission: '10-Speed Automatic',
+    fuelType: 'Gasoline',
+    exteriorColor: 'Magnetic Metallic',
+    interiorColor: 'Medium Earth Gray',
+    vin: '1FTFW1E50MFA123456',
+    description: 'Well-maintained work truck, towing package included',
+    features: ['4WD', 'Towing Package', 'Sync 3', 'Bed Liner'],
+    isNew: false,
+    daysOnLot: 18,
+    priceHistory: [
+      { date: '2023-12-01', price: 41500 },
+      { date: '2024-01-01', price: 39500 }
+    ],
+    mpgCity: 20,
+    mpgHighway: 24
+  },
+  {
+    id: '5',
+    year: 2023,
+    make: 'BMW',
+    model: '3 Series',
+    trim: '330i',
+    price: 42900,
+    mileage: 12500,
+    location: 'San Diego, CA',
+    zipcode: '92105',
+    imageUrl: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400',
+    listingUrl: '#',
+    dealer: 'BMW of San Diego',
+    transmission: '8-Speed Automatic',
+    fuelType: 'Gasoline',
+    exteriorColor: 'Alpine White',
+    interiorColor: 'Black SensaTec',
+    vin: 'WBA5R1C05NBK123456',
+    description: 'Luxury sedan with premium features and excellent performance',
+    features: ['iDrive 7', 'Heated Seats', 'Wireless Charging', 'Premium Audio'],
+    isNew: false,
+    daysOnLot: 8,
+    priceHistory: [
+      { date: '2024-01-05', price: 42900 }
+    ],
+    mpgCity: 26,
+    mpgHighway: 36
   }
-]
-\`\`\`
-`;
+];
 
-export const AI_WELCOME_MESSAGE: Message = {
-  id: 'initial-ai-message',
-  text: "Hello! I'm Carla, your personal AI car buying assistant. I can help you with everything from finding the perfect car to financing and negotiation. How can I help you today?",
-  sender: Sender.AI,
+// Car makes for filter dropdown
+export const CAR_MAKES = [
+  'Acura', 'Audi', 'BMW', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler', 'Dodge',
+  'Ford', 'Genesis', 'GMC', 'Honda', 'Hyundai', 'Infiniti', 'Jeep', 'Kia',
+  'Lexus', 'Lincoln', 'Mazda', 'Mercedes-Benz', 'Mitsubishi', 'Nissan',
+  'Ram', 'Subaru', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+];
+
+// Transmission options
+export const TRANSMISSION_TYPES = [
+  'Manual',
+  'Automatic',
+  'CVT',
+  'Single-Speed'
+];
+
+// Fuel types
+export const FUEL_TYPES = [
+  'Gasoline',
+  'Hybrid',
+  'Electric',
+  'Diesel',
+  'Plug-in Hybrid'
+];
+
+// Sort options
+export const SORT_OPTIONS = [
+  { value: 'price-asc', label: 'Price: Low to High' },
+  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'mileage-asc', label: 'Mileage: Low to High' },
+  { value: 'year-desc', label: 'Year: Newest First' },
+  { value: 'newest', label: 'Recently Added' }
+];
+
+// Default search radius options (in miles)
+export const RADIUS_OPTIONS = [5, 10, 25, 50, 100, 200, 500];
+
+// Default user location (San Diego for demo)
+export const DEFAULT_LOCATION: UserLocation = {
+  zipcode: '92101',
+  city: 'San Diego',
+  state: 'CA',
+  latitude: 32.7157,
+  longitude: -117.1611
 };

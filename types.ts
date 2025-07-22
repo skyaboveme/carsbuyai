@@ -1,42 +1,65 @@
-export enum Sender {
-  USER = 'user',
-  AI = 'ai',
-}
-
-export interface Source {
-  title: string;
-  uri: string;
-}
-
-export interface TruePriceScore {
-  score: number; // A rating from 1-10
-  analysis: string; // A brief explanation
-  marketValue: number; // Estimated market value
-}
-
-export interface CarListing {
+export interface Vehicle {
+  id: string;
   year: number;
   make: string;
   model: string;
+  trim?: string;
   price: number;
   mileage: number;
   location: string;
+  zipcode: string;
   imageUrl: string;
   listingUrl: string;
-  truePrice: TruePriceScore;
+  dealer: string;
+  transmission: string;
+  fuelType: string;
+  exteriorColor: string;
+  interiorColor: string;
+  vin: string;
+  description?: string;
+  features: string[];
+  isNew: boolean;
+  daysOnLot: number;
+  priceHistory: PricePoint[];
+  mpgCity?: number;
+  mpgHighway?: number;
 }
 
-export interface Message {
-  id: string;
-  text: string;
-  sender: Sender;
-  sources?: Source[];
-  listings?: CarListing[];
+export interface PricePoint {
+  date: string;
+  price: number;
 }
 
-export interface Conversation {
-  id:string;
-  title: string;
-  messages: Message[];
-  createdAt: number;
+export interface SearchFilters {
+  zipcode?: string;
+  radius?: number; // miles
+  minPrice?: number;
+  maxPrice?: number;
+  minYear?: number;
+  maxYear?: number;
+  maxMileage?: number;
+  makes?: string[];
+  models?: string[];
+  isNew?: boolean;
+  transmission?: string[];
+  fuelType?: string[];
+  minMpg?: number;
+  sortBy?: 'price' | 'mileage' | 'year' | 'distance' | 'newest';
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface UserLocation {
+  zipcode: string;
+  city: string;
+  state: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface SearchResults {
+  vehicles: Vehicle[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  filters: SearchFilters;
 }
