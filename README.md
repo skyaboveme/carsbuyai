@@ -1,6 +1,8 @@
-# CarsBuyAI.com 🚗🤖
+# CarsBuyAI.com - AI-Powered Vehicle Discovery Platform
 
-Your AI-powered car buying assistant that uses advanced artificial intelligence to help you research, shop for, and purchase the perfect vehicle.
+<!-- Deployment trigger: 2025-07-22 12:59 -->
+
+Find your perfect vehicle with our intelligent search platform powered by Google Gemini AI.
 
 ## 🌟 Features
 
