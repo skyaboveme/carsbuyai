@@ -1,0 +1,43 @@
+{
+  "name": "carsbuyai",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI-powered car buying assistant that helps users research, shop for, and purchase vehicles",
+  "author": "CarsBuyAI Team",
+  "license": "MIT",
+  "homepage": "https://carsbuyai.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/carsbuyai.git"
+  },
+  "keywords": [
+    "ai",
+    "cars",
+    "automotive",
+    "shopping",
+    "react",
+    "typescript",
+    "gemini",
+    "assistant"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && echo 'Build complete! Deploy the dist/ folder to your hosting service.'"
+  },
+  "dependencies": {
+    "react-dom": "^19.1.0",
+    "react": "^19.1.0",
+    "@google/genai": "^1.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
