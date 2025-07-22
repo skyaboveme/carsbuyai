@@ -26,8 +26,8 @@ Find your perfect vehicle with our intelligent search platform powered by Google
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/CarsBuyAI.com.git
-   cd CarsBuyAI.com
+   git clone https://github.com/yourusername/carsbuyai.git
+   cd carsbuyai
    ```
 
 2. **Install dependencies**
@@ -70,7 +70,7 @@ Find your perfect vehicle with our intelligent search platform powered by Google
 ## 📁 Project Structure
 
 ```
-CarsBuyAI.com/
+carsbuyai/
 ├── components/           # React components
 │   ├── Header.tsx       # Main navigation header
 │   ├── Sidebar.tsx      # Navigation and conversation history
