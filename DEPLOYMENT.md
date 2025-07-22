@@ -4,7 +4,7 @@ This guide will help you deploy CarsBuyAI.com to various hosting platforms.
 
 ## 🚀 Quick Deploy
 
-The easiest way to deploy CarsBuyAI is to use one of these platforms:
+The easiest way to deploy CarsBuyAI.com is to use one of these platforms:
 
 ### Vercel (Recommended)
 1. Fork this repository to your GitHub account
@@ -31,8 +31,8 @@ The easiest way to deploy CarsBuyAI is to use one of these platforms:
 ### Build Steps
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/carsbuyai.git
-cd carsbuyai
+git clone https://github.com/yourusername/CarsBuyAI.com.git
+cd CarsBuyAI.com
 
 # 2. Install dependencies
 npm install
@@ -55,9 +55,9 @@ npm run build
 cd dist
 git init
 git add .
-git commit -m "Deploy CarsBuyAI"
+git commit -m "Deploy CarsBuyAI.com"
 git branch -M gh-pages
-git remote add origin https://github.com/yourusername/carsbuyai.git
+git remote add origin https://github.com/yourusername/CarsBuyAI.com.git
 git push -u origin gh-pages
 ```
 
@@ -85,8 +85,8 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 ```bash
-docker build -t carsbuyai .
-docker run -p 80:80 carsbuyai
+docker build -t carsbuyai.com .
+docker run -p 80:80 carsbuyai.com
 ```
 
 ## 🌍 Environment Variables
@@ -205,7 +205,7 @@ location / {
 ## 🚀 Going Live
 
 ### Domain Setup
-1. Purchase a domain (recommended: carsbuyai.com)
+1. Purchase a domain (recommended: CarsBuyAI.com)
 2. Configure DNS to point to your hosting platform
 3. Set up SSL certificate (usually automatic)
 4. Update CNAME file if using GitHub Pages
