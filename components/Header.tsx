@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ userLocation, onLocationClick }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <h1 className="text-2xl font-bold text-blue-600">
-              🚗 VehicleFinder
+              🚗 CarsBuyAI.com
             </h1>
             
             {/* Navigation Menu */}

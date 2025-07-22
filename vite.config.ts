@@ -2,7 +2,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/', // For custom domain (carsbuyai.com)
+  base: '/', // For custom domain (CarsBuyAI.com)
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
