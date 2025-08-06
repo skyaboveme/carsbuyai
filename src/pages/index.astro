@@ -1,3 +1,7 @@
+---
+import WhyItMatters from '../components/WhyItMatters.astro';
+---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,9 +66,9 @@
     }
     </script>
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 <body>
     <!-- Navigation -->
@@ -79,6 +83,9 @@
                 </li>
                 <li class="nav-item">
                     <a href="#services" class="nav-link">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#why-matters" class="nav-link">Why It Matters</a>
                 </li>
                 <li class="nav-item">
                     <a href="#platforms" class="nav-link">AI Platforms</a>
@@ -118,19 +125,19 @@
             <div class="hero-image">
                 <div class="ai-platforms-grid">
                     <div class="platform-card">
-                        <img src="images/chatgpt-icon.png" alt="ChatGPT">
+                        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #1e40af, #3b82f6); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem; font-weight: bold;">AI</div>
                         <span>ChatGPT</span>
                     </div>
                     <div class="platform-card">
-                        <img src="images/perplexity-icon.png" alt="Perplexity">
+                        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981, #34d399); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem; font-weight: bold;">AI</div>
                         <span>Perplexity</span>
                     </div>
                     <div class="platform-card">
-                        <img src="images/grok-icon.png" alt="Grok">
+                        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #f59e0b, #fbbf24); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem; font-weight: bold;">AI</div>
                         <span>Grok</span>
                     </div>
                     <div class="platform-card">
-                        <img src="images/claude-icon.png" alt="Claude">
+                        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #ef4444, #f87171); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem; font-weight: bold;">AI</div>
                         <span>Claude</span>
                     </div>
                 </div>
@@ -168,7 +175,7 @@
     </section>
 
     <!-- Why It Matters Section -->
-    <!-- This section is now handled by the Astro component -->
+    <WhyItMatters />
 
     <!-- AI Platforms Section -->
     <section id="platforms" class="platforms">
@@ -316,6 +323,6 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html> 
