@@ -1,0 +1,70 @@
+baseURL = 'https://skyaboveme.github.io/carsbuyai/'
+languageCode = 'en-us'
+title = 'CarsBuyAI'
+theme = 'PaperMod'
+
+[params]
+  [params.homeInfoParams]
+    Title = "CarsBuyAI"
+    Content = "Get Your Auto Dealership Visible on AI Platforms"
+  socialIcons = [
+    { name = "twitter", url = "https://twitter.com/carsbuyai" },
+    { name = "linkedin", url = "https://linkedin.com/company/carsbuyai" }
+  ]
+  ShowReadingTime = false
+  ShowShareButtons = true
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowWordCount = false
+  ShowRssButtonInSectionTermList = true
+  UseHugoToc = true
+  [params.profileMode]
+    enabled = true
+    title = "CarsBuyAI"
+    subtitle = "Get Your Auto Dealership Visible on AI Platforms"
+    imageUrl = "/images/logo.png"
+    imageTitle = "CarsBuyAI Logo"
+    buttons = [
+      { name = "Get Started", url = "/contact" },
+      { name = "Learn More", url = "/services" }
+    ]
+
+[menu]
+  [[menu.main]]
+    identifier = "home"
+    name = "Home"
+    url = "/"
+    weight = 10
+  [[menu.main]]
+    identifier = "services"
+    name = "Services"
+    url = "/services/"
+    weight = 20
+  [[menu.main]]
+    identifier = "why-matters"
+    name = "Why It Matters"
+    url = "/why-matters/"
+    weight = 30
+  [[menu.main]]
+    identifier = "platforms"
+    name = "AI Platforms"
+    url = "/platforms/"
+    weight = 40
+  [[menu.main]]
+    identifier = "pricing"
+    name = "Pricing"
+    url = "/pricing/"
+    weight = 50
+  [[menu.main]]
+    identifier = "contact"
+    name = "Contact"
+    url = "/contact/"
+    weight = 60
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+    noClasses = false
