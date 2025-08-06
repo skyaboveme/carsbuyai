@@ -1,0 +1,22 @@
+AI Platform Icons Needed:
+
+1. chatgpt-icon.png - ChatGPT platform icon
+2. perplexity-icon.png - Perplexity platform icon  
+3. grok-icon.png - Grok platform icon
+4. claude-icon.png - Claude platform icon
+5. chatgpt-logo.png - ChatGPT logo for platform section
+6. perplexity-logo.png - Perplexity logo for platform section
+7. grok-logo.png - Grok logo for platform section
+8. claude-logo.png - Claude logo for platform section
+9. logo.png - CarsBuyAI logo
+10. og-image.jpg - Open Graph image for social sharing
+11. twitter-image.jpg - Twitter card image
+12. favicon.ico - Website favicon
+
+Recommended dimensions:
+- Icons: 48x48px or 64x64px
+- Logos: 64x64px or 128x128px
+- Social images: 1200x630px
+- Favicon: 32x32px
+
+These images should be optimized for web use and follow each platform's brand guidelines. 
